@@ -298,7 +298,6 @@
             this.Controls.Add(this.pnlViewStudent);
             this.Name = "StudentData";
             this.Size = new System.Drawing.Size(961, 661);
-            this.Load += new System.EventHandler(this.StudentData_Load);
             this.pnlStudentForm.ResumeLayout(false);
             this.pnlStudentForm.PerformLayout();
             this.pnlViewStudent.ResumeLayout(false);

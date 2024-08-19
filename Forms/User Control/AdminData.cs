@@ -15,36 +15,35 @@ namespace COMP1551_Coursework.Forms.User_Control
 {
     public partial class AdminData : UserControl
     {
+        public event EventHandler PersonAdded; // Declare an event to notify subscribers when a person is added
+        public event EventHandler PersonUpdated; // Declare an event to notify subscribers when a person is updated
+        public event EventHandler PersonDeleted; // Declare an event to notify subscribers when a person is deleted
+
         SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\ADMIN\Documents\comp1551_coursework.mdf;Integrated Security=True;Connect Timeout=30;Encrypt=False");
 
         public AdminData()
         {
             InitializeComponent();
-            LoadEmploymentTypes();
-            adminData();
-        }
-
-        private void AdminData_Load(object sender, EventArgs e)
-        {
-
+            LoadEmploymentTypes(); // Call the LoadEmploymentTypes method to load the employment types into the ComboBox
+            adminData(); // Call the adminData method to display all admins
         }
 
         public void adminData()
         {
-            Admin admin = new Admin();
+            Admin admin = new Admin(); // Create a new Admin object
 
-            dgvAdmin.AutoGenerateColumns = false;
-            dgvAdmin.Columns.Clear();
+            dgvAdmin.AutoGenerateColumns = false; // Configure the DataGridView to not automatically generate columns
+            dgvAdmin.Columns.Clear(); // Clear any existing columns
 
             // Define columns manually
-            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn();
-            personIDColumn.DataPropertyName = "PersonID"; // The property name in your Admin class
-            personIDColumn.HeaderText = "PersonID"; // The column header text
-            dgvAdmin.Columns.Add(personIDColumn);
+            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn(); // Create a new DataGridViewTextBoxColumn to display PersonID data
+            personIDColumn.DataPropertyName = "PersonID"; // Bind the column to the "PersonID" property of the data source
+            personIDColumn.HeaderText = "PersonID"; // Set the header text of the column
+            dgvAdmin.Columns.Add(personIDColumn); // Add the column to the DataGridView
 
             DataGridViewTextBoxColumn studentIDColumn = new DataGridViewTextBoxColumn();
-            studentIDColumn.DataPropertyName = "AdminID"; // The property name in your Admin class
-            studentIDColumn.HeaderText = "AdminID"; // The column header text
+            studentIDColumn.DataPropertyName = "AdminID"; 
+            studentIDColumn.HeaderText = "AdminID"; 
             dgvAdmin.Columns.Add(studentIDColumn);
 
             DataGridViewTextBoxColumn nameColumn = new DataGridViewTextBoxColumn();
@@ -77,10 +76,10 @@ namespace COMP1551_Coursework.Forms.User_Control
             workingHoursColumn.HeaderText = "WorkingHours";
             dgvAdmin.Columns.Add(workingHoursColumn);
 
-            dgvAdmin.DataSource = admin.admins();
+            dgvAdmin.DataSource = admin.admins(); // Bind the DataGridView to the list of admins
         }
 
-        private void btnAddAdmin_Click(object sender, EventArgs e)
+        private void btnAddAdmin_Click(object sender, EventArgs e) // Handle click event for the Add button
         {
             if (conn.State != ConnectionState.Open)
             {
@@ -88,29 +87,33 @@ namespace COMP1551_Coursework.Forms.User_Control
                 {
                     conn.Open();
 
-                    string personQuery = "INSERT INTO Person (Name, Telephone, Email, Role) OUTPUT INSERTED.PersonID VALUES (@Name, @Telephone, @Email, @Role)";
-                    int personID;
-                    using (SqlCommand personCmd = new SqlCommand(personQuery, conn))
+                    string personQuery = "INSERT INTO Person (Name, Telephone, Email, Role) OUTPUT INSERTED.PersonID VALUES (@Name, @Telephone, @Email, @Role)"; // Define a query to insert a new person
+                    int personID; // Declare a variable to store the ID of the new person
+                    using (SqlCommand personCmd = new SqlCommand(personQuery, conn)) // Create a new SqlCommand object
                     {
+                        // Add parameters to the query
                         personCmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
                         personCmd.Parameters.AddWithValue("@Telephone", txtPhone.Text.Trim());
                         personCmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                         personCmd.Parameters.AddWithValue("@Role", Role.Admin.ToString());
-
-                        personID = (int)personCmd.ExecuteScalar();
+                        personID = (int)personCmd.ExecuteScalar(); // Execute the query and store the ID of the new person
                     }
 
-                    string adminQuery = "INSERT INTO Admin (PersonID, Salary, EmploymentType, WorkingHours) VALUES (@PersonID, @Salary, @EmploymentType, @WorkingHours)";
-                    using (SqlCommand adminCmd = new SqlCommand(adminQuery, conn))
+                    string adminQuery = "INSERT INTO Admin (PersonID, Salary, EmploymentType, WorkingHours) VALUES (@PersonID, @Salary, @EmploymentType, @WorkingHours)"; // Define a query to insert a new admin
+                    using (SqlCommand adminCmd = new SqlCommand(adminQuery, conn)) // Create a new SqlCommand object
                     {
+                        // Add parameters to the query
                         adminCmd.Parameters.AddWithValue("@PersonID", personID);
                         adminCmd.Parameters.AddWithValue("@Salary", txtSalary.Text.Trim());
                         adminCmd.Parameters.AddWithValue("@EmploymentType", cBoxEployment.SelectedItem.ToString());
                         adminCmd.Parameters.AddWithValue("@WorkingHours", txtWorkingHours.Text.Trim());
-                        adminCmd.ExecuteNonQuery();
+                        adminCmd.ExecuteNonQuery(); // Execute the query
                     }
                     MessageBox.Show("Admin added successfully", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    adminData();
+                    adminData(); // Call the adminData method to refresh the DataGridView
+
+                    // Raise the event
+                    PersonAdded?.Invoke(this, EventArgs.Empty);
                 }
                 catch (SqlException ex)
                 {
@@ -135,28 +138,33 @@ namespace COMP1551_Coursework.Forms.User_Control
                 {
                     conn.Open();
 
-                    int personID = GetSelectedPersonID();
+                    int personID = GetSelectedPersonID(); // Get the ID of the selected admin
 
                     // Update Person table
-                    SqlCommand updatePersonCmd = new SqlCommand(
+                    SqlCommand updatePersonCmd = new SqlCommand( // Create a new SqlCommand object to update the Person table
                         "UPDATE Person SET Name = @Name, Telephone = @Telephone, Email = @Email WHERE PersonID = @PersonID", conn);
+                    // Add parameters to the query
                     updatePersonCmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
                     updatePersonCmd.Parameters.AddWithValue("@Telephone", txtPhone.Text.Trim());
                     updatePersonCmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                     updatePersonCmd.Parameters.AddWithValue("@PersonID", personID);
-                    updatePersonCmd.ExecuteNonQuery();
+                    updatePersonCmd.ExecuteNonQuery(); // Execute the query
 
                     // Update Admin table
-                    SqlCommand updateAdminCmd = new SqlCommand(
+                    SqlCommand updateAdminCmd = new SqlCommand( // Create a new SqlCommand object to update the Admin table
                         "UPDATE Admin SET Salary = @Salary, EmploymentType = @EmploymentType, WorkingHours = @WorkingHours WHERE PersonID = @PersonID", conn);
+                    // Add parameters to the query
                     updateAdminCmd.Parameters.AddWithValue("@Salary", txtSalary.Text.Trim());
                     updateAdminCmd.Parameters.AddWithValue("@EmploymentType", cBoxEployment.SelectedItem.ToString());
                     updateAdminCmd.Parameters.AddWithValue("@WorkingHours", txtWorkingHours.Text.Trim());
                     updateAdminCmd.Parameters.AddWithValue("@PersonID", personID);
-                    updateAdminCmd.ExecuteNonQuery();
+                    updateAdminCmd.ExecuteNonQuery(); // Execute the query
 
                     MessageBox.Show("Admin updated successfully", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    adminData();
+                    adminData(); // Call the adminData method to refresh the DataGridView
+
+                    // Raise the event
+                    PersonUpdated?.Invoke(this, EventArgs.Empty);
                 }
                 catch (SqlException ex)
                 {
@@ -173,9 +181,10 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private void btnDeleteAdmin_Click(object sender, EventArgs e)
+        private void btnDeleteAdmin_Click(object sender, EventArgs e) // Handle click event for the Delete button
         {
-            if (dgvAdmin.SelectedRows.Count == 0)
+            // Check if a row is selected
+            if (dgvAdmin.SelectedRows.Count == 0) // If no row is selected
             {
                 MessageBox.Show("Please select an admin to delete", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -207,6 +216,9 @@ namespace COMP1551_Coursework.Forms.User_Control
 
                     MessageBox.Show("Admin deleted successfully", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     adminData();
+
+                    // Raise the event
+                    PersonDeleted?.Invoke(this, EventArgs.Empty);
                 }
                 catch (SqlException ex)
                 {
@@ -223,12 +235,12 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private int GetSelectedPersonID()
+        private int GetSelectedPersonID() // Method to get the ID of the selected admin
         {
-            if (dgvAdmin.SelectedRows.Count > 0)
+            if (dgvAdmin.SelectedRows.Count > 0) // If a row is selected
             {
-                DataGridViewRow selectedRow = dgvAdmin.SelectedRows[0];
-                return Convert.ToInt32(selectedRow.Cells[0].Value);
+                DataGridViewRow selectedRow = dgvAdmin.SelectedRows[0]; // Get the selected row
+                return Convert.ToInt32(selectedRow.Cells[0].Value); // Return the value of the PersonID cell in the selected row
             }
             else
             {
@@ -236,7 +248,7 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private void LoadEmploymentTypes()
+        private void LoadEmploymentTypes() // Method to load the employment types into the ComboBox
         {
             // Create a list of strings and add an empty string as the first item
             List<string> employmentTypes = new List<string> { "" };
@@ -248,10 +260,11 @@ namespace COMP1551_Coursework.Forms.User_Control
             cBoxEployment.DataSource = employmentTypes;
         }
 
-        private void dgvAdmin_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvAdmin_CellClick(object sender, DataGridViewCellEventArgs e) // Handle click event for the DataGridView
         {
-            if(e.RowIndex >= 0)
+            if(e.RowIndex >= 0) // If a row is selected
             {
+                // Get the selected row
                 DataGridViewRow row = dgvAdmin.Rows[e.RowIndex];
                 txtName.Text = row.Cells[2].Value.ToString();
                 txtPhone.Text = row.Cells[3].Value.ToString();

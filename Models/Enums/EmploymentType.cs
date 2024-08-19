@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +8,7 @@ namespace COMP1551_Coursework.Models.Enums
 {
     public enum EmploymentType
     {
-        FullTime,
-        PartTime
+        FullTime, // Indicates a FullTime employment
+        PartTime // Indicates a PartTime employment
     }
 }
