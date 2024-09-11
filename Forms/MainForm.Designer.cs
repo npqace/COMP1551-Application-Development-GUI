@@ -35,10 +35,10 @@
             this.btnViewTeacher = new System.Windows.Forms.Button();
             this.btnViewAdmin = new System.Windows.Forms.Button();
             this.btnViewAll = new System.Windows.Forms.Button();
+            this.allUsers1 = new COMP1551_Coursework.Forms.User_Control.AllUsers(this.adminData1, this.teacherData1, this.studentData1);
             this.adminData1 = new COMP1551_Coursework.Forms.User_Control.AdminData();
             this.teacherData1 = new COMP1551_Coursework.Forms.User_Control.TeacherData();
             this.studentData1 = new COMP1551_Coursework.Forms.User_Control.StudentData();
-            this.allUsers1 = new COMP1551_Coursework.Forms.User_Control.AllUsers();
             this.pnlMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -129,6 +129,13 @@
             this.btnViewAll.UseVisualStyleBackColor = false;
             this.btnViewAll.Click += new System.EventHandler(this.btnViewAll_Click);
             // 
+            // allUsers1
+            // 
+            this.allUsers1.Location = new System.Drawing.Point(263, 0);
+            this.allUsers1.Name = "allUsers1";
+            this.allUsers1.Size = new System.Drawing.Size(961, 661);
+            this.allUsers1.TabIndex = 5;
+            // 
             // adminData1
             // 
             this.adminData1.Location = new System.Drawing.Point(263, 0);
@@ -151,13 +158,6 @@
             this.studentData1.Size = new System.Drawing.Size(961, 661);
             this.studentData1.TabIndex = 2;
             // 
-            // allUsers1
-            // 
-            this.allUsers1.Location = new System.Drawing.Point(263, 0);
-            this.allUsers1.Name = "allUsers1";
-            this.allUsers1.Size = new System.Drawing.Size(961, 661);
-            this.allUsers1.TabIndex = 5;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -172,7 +172,6 @@
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Main Dashboard";
-            this.Load += new System.EventHandler(this.frmMain_Load);
             this.pnlMenu.ResumeLayout(false);
             this.pnlMenu.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();

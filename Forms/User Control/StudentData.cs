@@ -15,36 +15,35 @@ namespace COMP1551_Coursework.Forms.User_Control
 {
     public partial class StudentData : UserControl
     {
+        public event EventHandler PersonAdded; // Declare an event to notify subscribers when a person is added
+        public event EventHandler PersonUpdated; // Declare an event to notify subscribers when a person is updated
+        public event EventHandler PersonDeleted; // Declare an event to notify subscribers when a person is deleted
+
         SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\ADMIN\Documents\comp1551_coursework.mdf;Integrated Security=True;Connect Timeout=30;Encrypt=False");
 
         public StudentData()
         {
             InitializeComponent();
-            LoadSubjects();
-            studentData();
+            LoadSubjects(); // Load subjects into ComboBox controls
+            studentData(); // Display student data in the DataGridView
         }
 
-        private void StudentData_Load(object sender, EventArgs e)
-        {
-
-        }
         public void studentData()
         {
-            Student student = new Student();
+            Student student = new Student(); // Create a new Student object
 
-            dgvStudents.AutoGenerateColumns = false;
-
-            dgvStudents.Columns.Clear();
+            dgvStudents.AutoGenerateColumns = false; // Configure the DataGridView to not automatically generate columns
+            dgvStudents.Columns.Clear(); // Clear any existing columns
 
             // Define columns manually
-            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn();
-            personIDColumn.DataPropertyName = "PersonID"; // The property name in your Student class
-            personIDColumn.HeaderText = "PersonID"; // The column header text
-            dgvStudents.Columns.Add(personIDColumn);
+            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn(); // Create a new DataGridViewTextBoxColumn to display PersonID data
+            personIDColumn.DataPropertyName = "PersonID"; // Bind the column to the "PersonID" property of the data source
+            personIDColumn.HeaderText = "PersonID"; // Set the header text of the column
+            dgvStudents.Columns.Add(personIDColumn); // Add the column to the DataGridView
 
             DataGridViewTextBoxColumn studentIDColumn = new DataGridViewTextBoxColumn();
-            studentIDColumn.DataPropertyName = "StudentID"; // The property name in your Student class
-            studentIDColumn.HeaderText = "StudentID"; // The column header text
+            studentIDColumn.DataPropertyName = "StudentID"; 
+            studentIDColumn.HeaderText = "StudentID"; 
             dgvStudents.Columns.Add(studentIDColumn);
 
             DataGridViewTextBoxColumn nameColumn = new DataGridViewTextBoxColumn();
@@ -82,12 +81,14 @@ namespace COMP1551_Coursework.Forms.User_Control
             previousSubject2Column.HeaderText = "Previous Subject 2";
             dgvStudents.Columns.Add(previousSubject2Column);
 
+            // Bind the DataGridView to the data source
             dgvStudents.DataSource = student.students();
 
         }
 
-        private void btnAddStudent_Click(object sender, EventArgs e)
+        private void btnAddStudent_Click(object sender, EventArgs e) // Handle click event for the Add Student button
         {
+            // Validate input fields
             if (txtName.Text == ""
                 || txtPhone.Text == ""
                 || txtEmail.Text == ""
@@ -98,12 +99,12 @@ namespace COMP1551_Coursework.Forms.User_Control
             {
                 MessageBox.Show("Please fill all fields", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            // Check if any of the subjects are the same (preventing duplicates)
             else if (cBoxCS1.Text == cBoxCS2.Text || cBoxCS1.Text == cBoxPS1.Text || cBoxCS1.Text == cBoxPS2.Text
                 || cBoxCS2.Text == cBoxPS1.Text || cBoxCS2.Text == cBoxPS2.Text || cBoxPS1.Text == cBoxPS2.Text)
             {
                 MessageBox.Show("Error: Subjects cannot be the same", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                // Reload the form to allow the user to correct the input
-                LoadSubjects();
+                LoadSubjects(); // Reload the form to allow the user to correct the input
             }
             else
             {
@@ -114,33 +115,37 @@ namespace COMP1551_Coursework.Forms.User_Control
                         conn.Open();
 
                         // Insert into Person table
-                        string personQuery = "INSERT INTO Person (Name, Telephone, Email, Role) OUTPUT INSERTED.PersonID VALUES (@Name, @Telephone, @Email, @Role)";
+                        string personQuery = "INSERT INTO Person (Name, Telephone, Email, Role) OUTPUT INSERTED.PersonID VALUES (@Name, @Telephone, @Email, @Role)"; // Use OUTPUT INSERTED to get the PersonID of the newly inserted row
                         int personID;
-                        using (SqlCommand personCmd = new SqlCommand(personQuery, conn))
+                        using (SqlCommand personCmd = new SqlCommand(personQuery, conn)) // Use a SqlCommand object to execute the query
                         {
+                            // Add parameters to the query
                             personCmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
                             personCmd.Parameters.AddWithValue("@Telephone", txtPhone.Text.Trim());
                             personCmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                             personCmd.Parameters.AddWithValue("@Role", Role.Student.ToString());
-
-                            personID = (int)personCmd.ExecuteScalar();
+                            personID = (int)personCmd.ExecuteScalar(); // Execute the query and get the PersonID of the newly inserted row
                         }
 
                         // Insert into Student table
-                        string studentQuery = "INSERT INTO Student (PersonID, CurrentSubject1, CurrentSubject2, PreviousSubject1, PreviousSubject2) VALUES (@PersonID, @CurrentSubject1, @CurrentSubject2, @PreviousSubject1, @PreviousSubject2)";
+                        string studentQuery = "INSERT INTO Student (PersonID, CurrentSubject1, CurrentSubject2, PreviousSubject1, PreviousSubject2) VALUES (@PersonID, @CurrentSubject1, @CurrentSubject2, @PreviousSubject1, @PreviousSubject2)"; // Define the query
+                        // Use a new SqlCommand object to execute the query
                         using (SqlCommand studentCmd = new SqlCommand(studentQuery, conn))
                         {
+                            // Add parameters to the query
                             studentCmd.Parameters.AddWithValue("@PersonID", personID);
                             studentCmd.Parameters.AddWithValue("@CurrentSubject1", cBoxCS1.Text.Trim());
                             studentCmd.Parameters.AddWithValue("@CurrentSubject2", cBoxCS2.Text.Trim());
                             studentCmd.Parameters.AddWithValue("@PreviousSubject1", cBoxPS1.Text.Trim());
                             studentCmd.Parameters.AddWithValue("@PreviousSubject2", cBoxPS2.Text.Trim());
-
-                            studentCmd.ExecuteNonQuery();
+                            studentCmd.ExecuteNonQuery(); // Execute the query
                         }
 
                         MessageBox.Show("Student added successfully", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        studentData();
+                        studentData(); // Refresh the DataGridView to display the new student
+
+                        // Raise the event
+                        PersonAdded?.Invoke(this, EventArgs.Empty);
                     }
                     catch (SqlException ex)
                     {
@@ -159,14 +164,14 @@ namespace COMP1551_Coursework.Forms.User_Control
         }
 
 
-        private void btnUpdateStudent_Click(object sender, EventArgs e)
+        private void btnUpdateStudent_Click(object sender, EventArgs e) // Handle click event for the Update Student button
         {
+            // Validate input fields (preventing duplicated subjects)
             if (cBoxCS1.Text == cBoxCS2.Text || cBoxCS1.Text == cBoxPS1.Text || cBoxCS1.Text == cBoxPS2.Text
                 || cBoxCS2.Text == cBoxPS1.Text || cBoxCS2.Text == cBoxPS2.Text || cBoxPS1.Text == cBoxPS2.Text)
             {
                 MessageBox.Show("Error: Subjects cannot be the same", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                // Reload the form to allow the user to correct the input
-                LoadSubjects();
+                LoadSubjects(); // Reload the form to allow the user to correct the input
             }
             else
             {
@@ -176,31 +181,35 @@ namespace COMP1551_Coursework.Forms.User_Control
                     {
                         conn.Open();
 
-                        // Assuming you have a way to get the selected student's PersonID
-                        int personID = GetSelectedPersonID();
+                        int personID = GetSelectedPersonID(); // Get the PersonID of the selected student
 
                         // Update Person table
                         SqlCommand updatePersonCmd = new SqlCommand(
-                            "UPDATE Person SET Name = @Name, Telephone = @Telephone, Email = @Email WHERE PersonID = @PersonID", conn);
+                            "UPDATE Person SET Name = @Name, Telephone = @Telephone, Email = @Email WHERE PersonID = @PersonID", conn); // Define the query
+                        // Use a new SqlCommand object to execute the query
                         updatePersonCmd.Parameters.AddWithValue("@Name", txtName.Text.Trim());
                         updatePersonCmd.Parameters.AddWithValue("@Telephone", txtPhone.Text.Trim());
                         updatePersonCmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                         updatePersonCmd.Parameters.AddWithValue("@PersonID", personID);
-                        updatePersonCmd.ExecuteNonQuery();
+                        updatePersonCmd.ExecuteNonQuery(); // Execute the query
 
                         // Update Student table
-                        SqlCommand updateStudentCmd = new SqlCommand(
+                        SqlCommand updateStudentCmd = new SqlCommand( // Define the query
                             "UPDATE Student SET CurrentSubject1 = @CurrentSubject1, CurrentSubject2 = @CurrentSubject2, PreviousSubject1 = @PreviousSubject1, PreviousSubject2 = @PreviousSubject2 WHERE PersonID = @PersonID", conn);
+                        // Use a new SqlCommand object to execute the query
                         updateStudentCmd.Parameters.AddWithValue("@CurrentSubject1", cBoxCS1.Text.Trim());
                         updateStudentCmd.Parameters.AddWithValue("@CurrentSubject2", cBoxCS2.Text.Trim());
                         updateStudentCmd.Parameters.AddWithValue("@PreviousSubject1", cBoxPS1.Text.Trim());
                         updateStudentCmd.Parameters.AddWithValue("@PreviousSubject2", cBoxPS2.Text.Trim());
                         updateStudentCmd.Parameters.AddWithValue("@PersonID", personID);
-                        updateStudentCmd.ExecuteNonQuery();
+                        updateStudentCmd.ExecuteNonQuery(); // Execute the query
 
                         MessageBox.Show("Student updated successfully", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        studentData();
+                        studentData(); // Refresh the DataGridView to display the updated student
 
+
+                        // Raise the event
+                        PersonUpdated?.Invoke(this, EventArgs.Empty);
                     }
                     catch (SqlException ex)
                     {
@@ -218,9 +227,9 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void btnDelete_Click(object sender, EventArgs e) // Handle click event for the Delete button
         {
-            if (dgvStudents.SelectedRows.Count == 0)
+            if (dgvStudents.SelectedRows.Count == 0) // Check if a student is selected
             {
                 MessageBox.Show("Please select a student to delete", "Error Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -253,6 +262,9 @@ namespace COMP1551_Coursework.Forms.User_Control
 
                     MessageBox.Show("Student deleted successfully", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     studentData();
+
+                    // Raise the event
+                    PersonDeleted?.Invoke(this, EventArgs.Empty);
                 }
                 catch (SqlException ex)
                 {
@@ -269,12 +281,13 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private int GetSelectedPersonID()
+        private int GetSelectedPersonID() // Get the PersonID of the selected student
         {
+            // Check if a student is selected
             if (dgvStudents.SelectedRows.Count > 0)
             {
-                DataGridViewRow selectedRow = dgvStudents.SelectedRows[0];
-                return Convert.ToInt32(selectedRow.Cells[0].Value);
+                DataGridViewRow selectedRow = dgvStudents.SelectedRows[0]; // Get the selected row
+                return Convert.ToInt32(selectedRow.Cells[0].Value); // Get the PersonID of the selected student
             }
             else
             {
@@ -282,21 +295,21 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private void LoadSubjects()
+        private void LoadSubjects() // Load subjects into ComboBox controls
         {
             if (conn.State != ConnectionState.Open)
             {
                 try
                 {
                     conn.Open();
-                    string query = "SELECT SubjectName FROM Subject";
+                    string query = "SELECT SubjectName FROM Subject"; // Define the query
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         SqlDataReader reader = cmd.ExecuteReader();
-                        List<string> subjects = new List<string>() { "" };
-                        while (reader.Read())
-                        {
-                            subjects.Add(reader["SubjectName"].ToString());
+                        List<string> subjects = new List<string>() { "" }; // Create a new list to store subjects and add an empty string as the first element
+                        while (reader.Read()) // Loop through the results
+                        { 
+                            subjects.Add(reader["SubjectName"].ToString()); // Add the subject to the list 
                         }
                         reader.Close();
 
@@ -322,18 +335,19 @@ namespace COMP1551_Coursework.Forms.User_Control
             }
         }
 
-        private void dgvStudents_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dgvStudents_CellClick(object sender, DataGridViewCellEventArgs e) // Handle click event for the DataGridView
         {
+            // Check if a student is selected
             if(e.RowIndex >= 0)
             {
-               DataGridViewRow row = dgvStudents.Rows[e.RowIndex];
-                txtName.Text = row.Cells[2].Value.ToString();
-                txtPhone.Text = row.Cells[3].Value.ToString();
-                txtEmail.Text = row.Cells[4].Value.ToString();
-                cBoxCS1.Text = row.Cells[5].Value.ToString();
-                cBoxCS2.Text = row.Cells[6].Value.ToString();
-                cBoxPS1.Text = row.Cells[7].Value.ToString();
-                cBoxPS2.Text = row.Cells[8].Value.ToString();
+               DataGridViewRow row = dgvStudents.Rows[e.RowIndex]; // Get the selected row
+                txtName.Text = row.Cells[2].Value.ToString(); // Display the student's data in the input fields
+                txtPhone.Text = row.Cells[3].Value.ToString(); // Display the student's data in the input fields
+                txtEmail.Text = row.Cells[4].Value.ToString(); // Display the student's data in the input fields
+                cBoxCS1.Text = row.Cells[5].Value.ToString(); // Display the student's data in the input fields
+                cBoxCS2.Text = row.Cells[6].Value.ToString(); // Display the student's data in the input fields
+                cBoxPS1.Text = row.Cells[7].Value.ToString(); // Display the student's data in the input fields
+                cBoxPS2.Text = row.Cells[8].Value.ToString(); // Display the student's data in the input fields
             }
         }
 

@@ -13,29 +13,34 @@ namespace COMP1551_Coursework.Forms.User_Control
 {
     public partial class AllUsers : UserControl
     {
-        public AllUsers()
+        private AdminData adminData;// Create a new AdminData object
+        private TeacherData teacherData;// Create a new TeacherData object
+        private StudentData studentData;// Create a new StudentData object
+
+        public AllUsers(AdminData adminData, TeacherData teacherData, StudentData studentData)
         {
             InitializeComponent();
-            userData();
-        }
+            
+            this.adminData = adminData;
+            this.teacherData = teacherData;
+            this.studentData = studentData;
 
-        private void AllUsers_Load(object sender, EventArgs e)
-        {
-
+            userData(); // Call the userData method to display all users
         }
 
         public void userData()
         {
-            Person user = new Person();
+            Person user = new Person(); // Create a new Person object
 
+            // Configure the DataGridView to not automatically generate columns
             dgvUsers.AutoGenerateColumns = false;
-            dgvUsers.Columns.Clear();
+            dgvUsers.Columns.Clear(); // Clear any existing columns
 
             // Define columns manually
-            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn();
-            personIDColumn.DataPropertyName = "PersonID";
-            personIDColumn.HeaderText = "PersonID";
-            dgvUsers.Columns.Add(personIDColumn);
+            DataGridViewTextBoxColumn personIDColumn = new DataGridViewTextBoxColumn(); // // Create a new DataGridViewTextBoxColumn to display PersonID data
+            personIDColumn.DataPropertyName = "PersonID"; // // Bind the column to the "PersonID" property of the data source
+            personIDColumn.HeaderText = "PersonID"; // Set the header text of the column
+            dgvUsers.Columns.Add(personIDColumn); // Add the column to the DataGridView
 
             DataGridViewTextBoxColumn nameColumn = new DataGridViewTextBoxColumn();
             nameColumn.DataPropertyName = "Name";
@@ -92,7 +97,13 @@ namespace COMP1551_Coursework.Forms.User_Control
             previousSubject2Column.HeaderText = "Previous Subject 2";
             dgvUsers.Columns.Add(previousSubject2Column);
 
+            // Set the data source of the DataGridView to the list of users returned by the UserList method
             dgvUsers.DataSource = user.UserList();
+        }
+
+        public void RefreshData()
+        {
+            userData(); // Call the userData method to refresh the data
         }
     }
 }

@@ -277,7 +277,6 @@
             this.Controls.Add(this.pnlViewStudent);
             this.Name = "AdminData";
             this.Size = new System.Drawing.Size(961, 661);
-            this.Load += new System.EventHandler(this.AdminData_Load);
             this.pnlStudentForm.ResumeLayout(false);
             this.pnlStudentForm.PerformLayout();
             this.pnlViewStudent.ResumeLayout(false);

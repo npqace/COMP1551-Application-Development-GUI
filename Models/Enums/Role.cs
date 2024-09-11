@@ -8,8 +8,8 @@ namespace COMP1551_Coursework.Models.Enums
 {
     public enum Role
     {
-        Admin,
-        Teacher,
-        Student
+        Admin,  // Represents an Admin role
+        Teacher, // Represents a Teacher role
+        Student // Represents a Student role
     }
 }
