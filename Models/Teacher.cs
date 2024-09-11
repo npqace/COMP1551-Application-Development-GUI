@@ -10,19 +10,20 @@ using COMP1551_Coursework.Models.Enums;
 
 namespace COMP1551_Coursework.Models
 {
-    public class Teacher : Person
+    public class Teacher : Person // Inherite from Person class
     {
         SqlConnection conn = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\ADMIN\Documents\comp1551_coursework.mdf;Integrated Security=True;Connect Timeout=30;Encrypt=False");
 
-        //data member
+        // Data members
         public string TeacherID { get; set; }
-        public new decimal Salary { get; set; }
-        public new string TeachingSubject1 { get; set; }
-        public new string TeachingSubject2 { get; set; }
+        public new decimal Salary { get; set; } // Overrides Person.Salary
+        public new string TeachingSubject1 { get; set; } // Overrides Person.TeachingSubject1
+        public new string TeachingSubject2 { get; set; } // Overrides Person.TeachingSubject2
 
+        // Default constructor
         public Teacher() { }
 
-        //constructor
+        // Constructor to create a Teacher object with the specified values
         public Teacher(int personID, string name, string telephone, string email, Role userRole, string teacherID, decimal salary, string teachingSubject1, string teachingSubject2)
             : base(name, telephone, email, userRole)
         {
@@ -37,17 +38,19 @@ namespace COMP1551_Coursework.Models
             this.TeachingSubject2 = teachingSubject2;
         }
 
-        // methods
+        // Method to retrieve a list of all Teacher objects from the database
         public List<Teacher> teachers()
         {
+            // Create an empty list to store retrieved Teacher objects
             List<Teacher> teacherList = new List<Teacher>();
 
             if(conn.State != ConnectionState.Open)
             {
                 try
                 {
-                    conn.Open();
+                    conn.Open(); // Open the connection to the database
 
+                    // SQL query to retrieve Teacher data with a join on the Person table
                     string query = @"SELECT
                         p.PersonID, t.TeacherID, p.Name, p.Telephone, p.Email, t.Salary,
                         t.TeachingSubject1, t.TeachingSubject2
@@ -56,14 +59,15 @@ namespace COMP1551_Coursework.Models
                         WHERE p.Role = 'Teacher'
                         ORDER BY t.TeacherID";
 
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlCommand cmd = new SqlCommand(query, conn)) // Create a command object for the query
                     {
-                        SqlDataReader reader = cmd.ExecuteReader();
+                        SqlDataReader reader = cmd.ExecuteReader(); // Execute the query and create a SqlDataReader
 
-                        while (reader.Read())
+                        while (reader.Read()) // Loop through each row returned by the query
                         {
-                            Teacher teacher = new Teacher();
+                            Teacher teacher = new Teacher(); // Create a new Teacher object
                             {
+                                // Assign values from the data reader to the Teacher object properties
                                 teacher.PersonID = Convert.ToInt32(reader["PersonID"]);
                                 teacher.TeacherID = reader["TeacherID"].ToString();
                                 teacher.Name = reader["Name"].ToString();

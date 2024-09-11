@@ -67,8 +67,10 @@ namespace COMP1551_Coursework.Models
                                     ";
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
+                        // Execute the command and create a SqlDataReader to read the results
                         SqlDataReader reader = cmd.ExecuteReader();
                         {
+                            // Loop through each row in the result set retrieved from the database
                             while (reader.Read())
                             {
                                 Person user = new Person();
@@ -89,6 +91,7 @@ namespace COMP1551_Coursework.Models
                                 }
                                 users.Add(user);
                             }
+                            // Close the SqlDataReader to release resources
                             reader.Close();
                         }
                     }

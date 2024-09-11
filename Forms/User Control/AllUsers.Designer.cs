@@ -75,7 +75,6 @@
             this.Controls.Add(this.pnlViewStudent);
             this.Name = "AllUsers";
             this.Size = new System.Drawing.Size(961, 661);
-            this.Load += new System.EventHandler(this.AllUsers_Load);
             this.pnlViewStudent.ResumeLayout(false);
             this.pnlViewStudent.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvUsers)).EndInit();
